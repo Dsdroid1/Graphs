@@ -531,10 +531,13 @@ Bool isGraphConnected(Graph G)
                         //Use this to update the reachability matrix
                         for(k=0;k<G.N;k++)
                         {
-                            if(Reachability[i][k]==0 && Reachability[j][k]==1)
+                            if(k!=i)
                             {
-                                Reachability[i][k]=1;
-                                update=1;
+                                if(Reachability[i][k]==0 && Reachability[j][k]==1)
+                                {
+                                    Reachability[i][k]=1;
+                                    update=1;
+                                }
                             }
                         }
                     }
@@ -550,9 +553,12 @@ Bool isGraphConnected(Graph G)
     {
         for(j=0;j<G.N && retval==TRUE;j++)
         {
-            if(Reachability[i][j]!=1)
+            if(i!=j)
             {
-                retval=FALSE;
+                if(Reachability[i][j]!=1)
+                {
+                    retval=FALSE;
+                }
             }
         }
     }
