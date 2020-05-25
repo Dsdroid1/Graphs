@@ -429,11 +429,70 @@ void BFT(Graph G)
         }
     }
 }
-
-
-
-
 //**---------------END OF TRAVERSE FUNCTIONS------------------------------------
+
+status_code TopologicalSort(Graph G)
+{
+    status_code sc=SUCCESS;
+    int Visited[MAX_NO_OF_VERTICES]={0};
+    int parent_edges[MAX_NO_OF_VERTICES]={0};
+    GraphNode *Connection;
+    int i=0,done=0,number_unlocked_in_this_iter=0,found=0;
+    printf("\n\nTopological Sort:\n");
+    //Tabulate the data
+    for(i=0;i<G.N;i++)
+    {
+        Connection=G.EdgeList[i];
+        while(Connection!=NULL)
+        {
+            parent_edges[Connection->NodeNumber]++;
+            Connection=Connection->next;
+        }
+    }
+    //We now have the data correponding to initial state
+    while(sc==SUCCESS && done==0)
+    {
+        //Search for any nodes with 0 parent edges
+        number_unlocked_in_this_iter=0;
+        for(i=0;i<G.N;i++)
+        {
+            if(parent_edges[i]==0)
+            {
+                if(Visited[i]==0)
+                {
+                    number_unlocked_in_this_iter++;
+                    printf("%d ",i);
+                    Visited[i]=1;
+                    //Delete all parent of outgoing from this node after printing it
+                    Connection=G.EdgeList[i];
+                    while(Connection!=NULL)
+                    {
+                        parent_edges[Connection->NodeNumber]--;
+                        Connection=Connection->next;
+                    }
+                }
+                
+            }
+        }
+        if(number_unlocked_in_this_iter==0)
+        {
+            for(i=0;i<G.N && found==0;i++)
+            {
+                if(parent_edges[i]!=0)
+                {
+                    found=1;
+                    sc=FAILURE;
+                    //Some cycle existed
+                }
+            }
+            if(found==0)
+            {
+                done=1;//All nodes have been visited
+            }
+        }
+    }
+    return sc;
+}
 
 ///********************For testing purpose ONLY********************
 void main()
@@ -446,6 +505,7 @@ void main()
     {
         BFT(G);
         DFT(G);
+        TopologicalSort(G);
     }
     
 }
