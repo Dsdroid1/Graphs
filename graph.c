@@ -592,6 +592,70 @@ Bool isGraphConnected(Graph G)
     return retval;
 }
 
+Bool isCycleInGraph(Graph G)
+{
+    //based on similar approach of the topological sort
+    Bool retval=TRUE;
+    int Visited[MAX_NO_OF_VERTICES]={0};
+    int parent_edges[MAX_NO_OF_VERTICES]={0};
+    GraphNode *Connection;
+    int i=0,done=0,number_unlocked_in_this_iter=0,found=0;
+    
+    //Tabulate the data
+    for(i=0;i<G.N;i++)
+    {
+        Connection=G.EdgeList[i];
+        while(Connection!=NULL)
+        {
+            parent_edges[Connection->NodeNumber]++;
+            Connection=Connection->next;
+        }
+    }
+    //We now have the data correponding to initial state
+    while(done==0)
+    {
+        //Search for any nodes with 0 parent edges
+        number_unlocked_in_this_iter=0;
+        for(i=0;i<G.N;i++)
+        {
+            if(parent_edges[i]==0)
+            {
+                if(Visited[i]==0)
+                {
+                    number_unlocked_in_this_iter++;
+                    Visited[i]=1;
+                    //Delete all parent of outgoing from this node
+                    Connection=G.EdgeList[i];
+                    while(Connection!=NULL)
+                    {
+                        parent_edges[Connection->NodeNumber]--;
+                        Connection=Connection->next;
+                    }
+                }
+                
+            }
+        }
+        if(number_unlocked_in_this_iter==0)
+        {
+            for(i=0;i<G.N && found==0;i++)
+            {
+                if(parent_edges[i]!=0)
+                {
+                    found=1;
+                    retval=FALSE;
+                    done=1;
+                    //Some cycle existed
+                }
+            }
+            if(found==0)
+            {
+                done=1;//All nodes have been visited
+            }
+        }
+    }
+    return retval;
+}
+
 ///********************For testing purpose ONLY********************
 void main()
 {
@@ -602,20 +666,33 @@ void main()
     if(sc==SUCCESS)
     {
         BFT(G);
+        
         DFT(G);
+        
         sc=TopologicalSort(G);
         if(sc==FAILURE)
         {
             printf("\nTerminating function,cycle detected");
         }
+       
         Bool b=isGraphConnected(G);
         if(b==TRUE)
         {
-            printf("\nYes,connected ");
+            printf("\nYes,connected \n");
         }
         else
         {
-            printf("\nNo, not connected");
+            printf("\nNo, not connected\n");
+        }
+
+        b=isCycleInGraph(G);
+        if(b==TRUE)
+        {
+            printf("\nNo cycle exists\n");
+        }
+        else
+        {
+            printf("\nYes, atleast one cycle is present\n");
         }
     }
     
