@@ -501,7 +501,7 @@ status_code TopologicalSort(Graph G)
 
 Bool isGraphConnected(Graph G)
 {
-    //For DiGraphs
+    //For DiGraphs Acyclic ..DAGs
     Bool retval=TRUE;
     int update=0,done=0;
     int Reachability[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
@@ -517,50 +517,77 @@ Bool isGraphConnected(Graph G)
         }
     }
     //Initialisation phase ends
-    while(done==0)
+    //Adding an optim.
+    int found=0,not_connected=0;
+    for(i=0;i<G.N && not_connected==0;i++)
     {
-        update=0;
-        for(i=0;i<G.N;i++)
+        found=0;
+        for(j=0;j<G.N && found==0;j++)
         {
-            for(j=0;j<G.N;j++)
+            if(i!=j)
             {
-                if(i!=j)
+                if(Reachability[i][j]!=0)
                 {
-                    if(Reachability[i][j]==1)
+                    found=1;
+                }
+            }
+        }
+        if(found==0)
+        {
+            not_connected=1;
+        }
+    }
+    if(not_connected==0)
+    {
+        while(done==0)
+        {
+            update=0;
+            for(i=0;i<G.N;i++)
+            {
+                for(j=0;j<G.N;j++)
+                {
+                    if(i!=j)
                     {
-                        //Use this to update the reachability matrix
-                        for(k=0;k<G.N;k++)
+                        if(Reachability[i][j]==1)
                         {
-                            if(k!=i)
+                            //Use this to update the reachability matrix
+                            for(k=0;k<G.N;k++)
                             {
-                                if(Reachability[i][k]==0 && Reachability[j][k]==1)
+                                if(k!=i)
                                 {
-                                    Reachability[i][k]=1;
-                                    update=1;
+                                    if(Reachability[i][k]==0 && Reachability[j][k]==1)
+                                    {
+                                        Reachability[i][k]=1;
+                                        update=1;
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-        if(update==0)
-        {
-            done=1;
-        }
-    }
-    for(i=0;i<G.N && retval==TRUE;i++)
-    {
-        for(j=0;j<G.N && retval==TRUE;j++)
-        {
-            if(i!=j)
+            if(update==0)
             {
-                if(Reachability[i][j]!=1)
+                done=1;
+            }
+        }
+        for(i=0;i<G.N && retval==TRUE;i++)
+        {
+            for(j=0;j<G.N && retval==TRUE;j++)
+            {
+                if(i!=j)
                 {
-                    retval=FALSE;
+                    if(Reachability[i][j]!=1)
+                    {
+                        retval=FALSE;
+                    }
                 }
             }
         }
+    }
+    else
+    {
+        retval=FALSE;
     }
     return retval;
 }
