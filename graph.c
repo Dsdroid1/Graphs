@@ -6,18 +6,22 @@
 
 typedef enum {FALSE,TRUE} Bool;
 typedef enum {FAILURE,SUCCESS} status_code;
+typedef enum {DIRECTED,UNDIRECTED} graph_type;
+
 
 typedef struct GraphNode
 {
     int NodeNumber;
     struct GraphNode *next;
-    //struct GraphNode *jump;//Which will take to the corresponding element in the graph array
+    //int weight;
 }GraphNode;
 
 typedef struct Graph
 {
     int N;//No.of Vertices/Nodes
     struct GraphNode *EdgeList[MAX_NO_OF_VERTICES];
+    //int UserVertices[MAX_NO_OF_VERTICES];
+    //graph_type type;
 }Graph;
 
 //BAsic Structure definitions end here-----------------------
@@ -493,6 +497,67 @@ status_code TopologicalSort(Graph G)
     }
     return sc;
 }
+//------------------------END of TOPOLOGICAL SORT-----------------
+
+Bool isGraphConnected(Graph G)
+{
+    //For DiGraphs
+    Bool retval=TRUE;
+    int update=0,done=0;
+    int Reachability[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
+    GraphNode *Connection=NULL;
+    int i=0,j=0,k=0;
+    for(i=0;i<G.N;i++)
+    {
+        Connection=G.EdgeList[i];
+        while(Connection!=NULL)
+        {
+            Reachability[i][Connection->NodeNumber]=1;
+            Connection=Connection->next;
+        }
+    }
+    //Initialisation phase ends
+    while(done==0)
+    {
+        update=0;
+        for(i=0;i<G.N;i++)
+        {
+            for(j=0;j<G.N;j++)
+            {
+                if(i!=j)
+                {
+                    if(Reachability[i][j]==1)
+                    {
+                        //Use this to update the reachability matrix
+                        for(k=0;k<G.N;k++)
+                        {
+                            if(Reachability[i][k]==0 && Reachability[j][k]==1)
+                            {
+                                Reachability[i][k]=1;
+                                update=1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(update==0)
+        {
+            done=1;
+        }
+    }
+    for(i=0;i<G.N && retval==TRUE;i++)
+    {
+        for(j=0;j<G.N && retval==TRUE;j++)
+        {
+            if(Reachability[i][j]!=1)
+            {
+                retval=FALSE;
+            }
+        }
+    }
+    return retval;
+}
 
 ///********************For testing purpose ONLY********************
 void main()
@@ -505,7 +570,20 @@ void main()
     {
         BFT(G);
         DFT(G);
-        TopologicalSort(G);
+        sc=TopologicalSort(G);
+        if(sc==FAILURE)
+        {
+            printf("\nTerminating function,cycle detected");
+        }
+        Bool b=isGraphConnected(G);
+        if(b==TRUE)
+        {
+            printf("\nYes,connected ");
+        }
+        else
+        {
+            printf("\nNo, not connected");
+        }
     }
     
 }
