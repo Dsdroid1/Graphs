@@ -1,7 +1,9 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<limits.h>
 
 #define MAX_NO_OF_VERTICES 10
+#define INF INT_MAX
 //Using Adjacency List
 
 typedef enum {FALSE,TRUE} Bool;
@@ -13,7 +15,7 @@ typedef struct GraphNode
 {
     int NodeNumber;
     struct GraphNode *next;
-    //int weight;
+    int weight;
 }GraphNode;
 
 typedef struct Graph
@@ -148,7 +150,7 @@ status_code AddNode(Graph *G)
     return sc;
 }
 
-status_code AddEdge(Graph *G,int start_vertex,int end_vertex)
+status_code AddEdge(Graph *G,int start_vertex,int end_vertex,int weight)
 {
     //Node is from start_vertex - - - - > end_vertex
     //Considering DiGraphs currently
@@ -161,6 +163,7 @@ status_code AddEdge(Graph *G,int start_vertex,int end_vertex)
         {
             Vertex->NodeNumber=end_vertex;
             Vertex->next=NULL;
+            Vertex->weight=weight;
             //Vertex->jump=G->EdgeList[end_vertex];
             Connection=G->EdgeList[start_vertex];
             if(Connection!=NULL)//It was neighbour to someone else
@@ -320,10 +323,10 @@ status_code ReadGraph(Graph *G,char *filename)
             if(sc==SUCCESS)
             {
                 //Continue edge addition
-                int start_vertex,end_vertex;
-                while(fscanf(fp,"%d%d",&start_vertex,&end_vertex)!=EOF && sc==SUCCESS)
+                int start_vertex,end_vertex,weight;
+                while(fscanf(fp,"%d%d%d",&start_vertex,&end_vertex,&weight)!=EOF && sc==SUCCESS)
                 {
-                    sc=AddEdge(G,start_vertex,end_vertex);
+                    sc=AddEdge(G,start_vertex,end_vertex,weight);
                 }
                 if(sc==SUCCESS)
                 {
@@ -498,7 +501,165 @@ status_code TopologicalSort(Graph G)
     return sc;
 }
 //------------------------END of TOPOLOGICAL SORT-----------------
+status_code DijkstraShortestPath(Graph G,int Vertex,int pathcost[MAX_NO_OF_VERTICES],int path[MAX_NO_OF_VERTICES])//Will only work for positive edges 
+{
+    int CostMatrix[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
+    status_code sc=SUCCESS;
+    //Populate the cost matrix
+    int i=0,j=0,k=0;
+    GraphNode *Connection=NULL;
+    for(i=0;i<G.N;i++)
+    {
+        Connection=G.EdgeList[i];
+        while(Connection!=NULL && sc==SUCCESS)
+        {
+            if(Connection->weight > 0)
+            {
+                CostMatrix[i][Connection->NodeNumber]=Connection->weight;
+            }
+            else
+            {
+                sc=FAILURE;
+            }
+            Connection=Connection->next;
+        }
+    }
+    for(i=0;i<G.N;i++)
+    {
+        for(j=0;j<G.N;j++)
+        {
+            if(i!=j)
+            {
+                if(CostMatrix[i][j]==0)
+                {
+                    CostMatrix[i][j]=INF;//No edge exists 
+                }
+            }
+        }
+    }
+    //Now the algorithm
 
+
+    if(sc==SUCCESS)
+    {
+        int gotshortestpath[MAX_NO_OF_VERTICES]={0};
+        int min=INF,min_vertex=-1;
+        
+        for(i=0;i<G.N;i++)
+        {
+            pathcost[i]=CostMatrix[Vertex][i];
+            path[i]=-1;//Indicating direct route
+        }
+        //Some initialisations
+        
+        for(i=0;i<G.N-1;i++)
+        {
+            min=INF;
+            min_vertex=-1;
+            //get the least cost path till now
+            for(j=0;j<G.N;j++)
+            {
+                if(CostMatrix[Vertex][j] < min)
+                {
+                    if(gotshortestpath[j]==0)
+                    {
+                        min=CostMatrix[Vertex][j];
+                        min_vertex=j;
+                    }
+                }
+            }
+            //After this loop we get the current not finalised min
+            if(min_vertex!=-1)
+            {
+                gotshortestpath[min_vertex]=1;
+                //Store this path length in the array to return
+                pathcost[min_vertex]=min;
+            }
+            
+            
+
+            //Now ,use this min to try to update any other existing pathlength
+            if(min!=INF)
+            {
+                for(k=0;k<G.N;k++)
+                {
+                    //Check if it improves any other path
+                    if(gotshortestpath[k]==0)
+                    {
+                        if(CostMatrix[min_vertex][k]!=INF)
+                        {
+                            if(CostMatrix[Vertex][k] > CostMatrix[Vertex][min_vertex]+CostMatrix[min_vertex][k])
+                            {
+                                CostMatrix[Vertex][k]=CostMatrix[Vertex][min_vertex]+CostMatrix[min_vertex][k];
+                                path[k]=min_vertex;//To go to 'k' we need to go via 'min_vertex'
+                            }
+                        }
+                    }
+                }
+            }
+            
+            
+        }
+        int done=0;
+        for(i=0;i<G.N && done==0 ;i++)
+        {
+            if(gotshortestpath[i]==0)
+            {
+                pathcost[i]=CostMatrix[Vertex][i];
+                done=1;
+            }
+        }
+
+    }
+    
+    return sc;
+}
+
+//----------To help prin the results of DijkstraShortestPath------
+void PrintPathCalculatedViaDijkstra(Graph G,int vertex,int pathcost[MAX_NO_OF_VERTICES],int path[MAX_NO_OF_VERTICES])
+{
+    int i=0,j=0,k=0;
+    int displaypath[MAX_NO_OF_VERTICES];
+    printf("\n\nResults of Dijkstra's Shortest Path Algorithm:");
+    for(i=0;i<G.N;i++)
+    {
+        if(pathcost[i]!=INF)
+        {
+            printf("\nThe shortest path from %d to %d costs:%d",vertex,i,pathcost[i]);
+            printf("\nThe path is:");
+            if(i==vertex)
+            {
+                printf("Trivial to itself");
+            }
+            else
+            {
+                k=0;
+                j=i;
+                displaypath[k]=j;
+                k++;
+                while(path[j]!=-1)
+                {
+                    displaypath[k]=path[j];
+                    j=path[j];
+                    k++;
+                }
+                displaypath[k]=vertex;
+                for(j=k;j>=0;j--)
+                {
+                    printf("%d ",displaypath[j]);
+                }
+            }
+        }
+        else
+        {
+            printf("\nThe shortest path from %d to %d costs:INF",vertex,i);
+            printf("\nThe path is:Does Not Exist");
+        }
+    }
+
+}
+
+//----------------------------------------------------------------
 Bool isGraphConnected(Graph G)
 {
     //For DiGraphs Acyclic ..DAGs
@@ -592,7 +753,11 @@ Bool isGraphConnected(Graph G)
     return retval;
 }
 
-Bool isCycleInGraph(Graph G)
+//
+
+
+//-----------------------------------------------------------------
+Bool isCycleInGraph(Graph G)//This one works only for Digraphs
 {
     //based on similar approach of the topological sort
     Bool retval=TRUE;
@@ -665,6 +830,7 @@ void main()
     sc=ReadGraph(&G,"TestGraph.txt");
     if(sc==SUCCESS)
     {
+        /*
         BFT(G);
         
         DFT(G);
@@ -693,6 +859,29 @@ void main()
         else
         {
             printf("\nYes, atleast one cycle is present\n");
+        }
+        */
+        int pathcost[MAX_NO_OF_VERTICES],path[MAX_NO_OF_VERTICES];
+        int vertex,i=0,j=0;
+        vertex=1;
+        sc=DijkstraShortestPath(G,vertex,pathcost,path);
+        if(sc==SUCCESS)
+        {
+            printf("\n");
+            PrintPathCalculatedViaDijkstra(G,vertex,pathcost,path);
+            /*for(i=0;i<G.N;i++)
+            {
+                printf("\nThe cost to go to %d from %d is:%d",vertex,i,pathcost[i]);
+                j=i;
+                printf("\nReverse of this path is:");
+                printf("\n%d ",j);
+                while(path[j]!=-1)
+                {
+                    j=path[j];
+                    printf("%d ",j);
+                }
+                printf("%d",vertex);
+            }*/
         }
     }
     
