@@ -755,8 +755,111 @@ void PrintPathCalculatedViaDijkstra(Graph G,int vertex,int pathcost[MAX_NO_OF_VE
 }
 //End of Dijkstra's Shortest Path algorithm
 //----------------------------------------------------------------
-//
+//All Pair Shortest Path Algorithm
+void PrintPathCalculatedViaAPSP(Graph G,int CostMatrix[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES],int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]);
+void AllPairShortestPath(Graph G,int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES])
+{
+    int CostMatrix[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
+    int i=0,j=0,k=0;
+    GraphNode *Connection;
+    for(i=0;i<G.N;i++)
+    {
+        Connection=G.EdgeList[i];
+        while(Connection!=NULL)
+        {
+            CostMatrix[i][Connection->NodeNumber]=Connection->weight;
+            Connection=Connection->next;
+        }
+    }
+    for(i=0;i<G.N;i++)
+    {
+        for(j=0;j<G.N;j++)
+        {
+            Path[i][j]=-1;
+            if(i!=j)
+            {
+                if(CostMatrix[i][j]==0)
+                {
+                    CostMatrix[i][j]=INF;
+                }
+            }
+        }
+    }
+    //Initialising Cost matrix complete
+    //This matrix is the -1 th matrix.....from this we will derive ,0th,1th,2th...(G.N-1)th matrix
 
+    for(k=0;k<G.N;k++)//k will signify which matrix is being made
+    {
+        for(i=0;i<G.N;i++)
+        {
+            for(j=0;j<G.N;j++)
+            {
+                if(i!=j)
+                {
+                    if(CostMatrix[i][k]!=INF && CostMatrix[k][j]!=INF)
+                    {
+                        if(CostMatrix[i][j] > CostMatrix[i][k]+CostMatrix[k][j])
+                        {
+                            CostMatrix[i][j]=CostMatrix[i][k]+CostMatrix[k][j];
+                            //Update the path
+                            Path[i][j]=k;//Path 'i' will signify the array for going to any vertex from 'i'
+                            //Path i,j signifies the previous element that is to j in the path from i to j
+                        }
+                    }
+                }
+            }
+        }
+    }
+    PrintPathCalculatedViaAPSP(G,CostMatrix,Path);
+}
+
+void PrintPathCalculatedViaAPSP(Graph G,int CostMatrix[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES],int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES])
+{
+    int displaypath[MAX_NO_OF_VERTICES]={0};
+    int i=0,j=0,k=0,l=0;
+    printf("\n**********************************");
+    printf("\n\nThe Data calculated by APSP is:");
+    for(i=0;i<G.N;i++)
+    {
+        for(j=0;j<G.N;j++)
+        {
+            printf("\n");
+            if(i==j)
+            {
+                printf("\nThe Path from %d to %d has Cost:0",i,j);
+                printf("\nThe path is:Trivial to itself");
+            }
+            else
+            {
+                if(CostMatrix[i][j]==INF)
+                {
+                    printf("\nThe Path from %d to %d has Cost:INF",i,j);
+                    printf("\nThe path is:Does not exist");
+                }
+                else
+                {
+                    printf("\nThe Path from %d to %d has Cost:%d",i,j,CostMatrix[i][j]);
+                    printf("\nThe path is:");
+                    k=0;
+                    l=j;
+                    displaypath[k]=l;
+                    k++;
+                    while(Path[i][l]!=-1)
+                    {
+                        displaypath[k]=Path[i][l];
+                        l=Path[i][l];
+                        k++;
+                    }
+                    displaypath[k]=i;
+                    for(l=k;l>=0;l--)
+                    {
+                        printf("%d ",displaypath[l]);
+                    }
+                }
+            }
+        }
+    }
+}
 
 //-----------------------------------------------------------------
 Bool isCycleInGraph(Graph G)//This one works only for Digraphs
@@ -915,6 +1018,7 @@ void main()
             printf("\nNo, not connected\n");
         }
         */
+        /*
         Bool b=isCycleInGraph(G);
         if(b==FALSE)
         {
@@ -924,6 +1028,7 @@ void main()
         {
             printf("\nYes, atleast one cycle is present\n");
         }
+        */
         /*
         int pathcost[MAX_NO_OF_VERTICES],path[MAX_NO_OF_VERTICES];
         int vertex,i=0,j=0;
@@ -934,6 +1039,8 @@ void main()
             printf("\n");
             PrintPathCalculatedViaDijkstra(G,vertex,pathcost,path);
         }*/
+        int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
+        AllPairShortestPath(G,Path);
     }
     
 }
