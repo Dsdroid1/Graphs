@@ -759,6 +759,7 @@ void PrintPathCalculatedViaDijkstra(Graph G,int vertex,int pathcost[MAX_NO_OF_VE
 void PrintPathCalculatedViaAPSP(Graph G,int CostMatrix[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES],int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]);
 void AllPairShortestPath(Graph G,int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES])
 {
+    //Currently the path storing/displaying method is wrong....  
     int CostMatrix[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
     int i=0,j=0,k=0;
     GraphNode *Connection;
@@ -802,7 +803,23 @@ void AllPairShortestPath(Graph G,int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES
                         {
                             CostMatrix[i][j]=CostMatrix[i][k]+CostMatrix[k][j];
                             //Update the path
-                            Path[i][j]=k;//Path 'i' will signify the array for going to any vertex from 'i'
+                            //***********Stuff needs to be done
+                            if(Path[k][j]==-1)
+                            {
+                                //-1 will imply direct edge from k to j
+                                Path[i][j]=k;
+                            }
+                            else
+                            {
+                                int m=Path[k][j];
+                                //Now the path is k,m then m,j
+                                while(Path[m][j]!=-1)
+                                {
+                                    m=Path[m][j];
+                                }
+                                Path[i][j]=m;
+                            }
+                            //Path[i][j]=k;//Path 'i' will signify the array for going to any vertex from 'i'
                             //Path i,j signifies the previous element that is to j in the path from i to j
                         }
                     }
@@ -842,6 +859,20 @@ void PrintPathCalculatedViaAPSP(Graph G,int CostMatrix[MAX_NO_OF_VERTICES][MAX_N
                     printf("\nThe path is:");
                     k=0;
                     l=j;
+                    //displaypath[k]=l;
+                    //k++;
+                    int m=l;
+                   // m=Path[i][j];
+                    while(Path[i][m]!=-1)
+                    {
+                        displaypath[k]=m;
+                        k++;
+                        m=Path[i][m];
+                    }
+                    displaypath[k]=m;
+                    k++;
+                    displaypath[k]=i;
+                    /*
                     displaypath[k]=l;
                     k++;
                     while(Path[i][l]!=-1)
@@ -851,6 +882,7 @@ void PrintPathCalculatedViaAPSP(Graph G,int CostMatrix[MAX_NO_OF_VERTICES][MAX_N
                         k++;
                     }
                     displaypath[k]=i;
+                    */
                     for(l=k;l>=0;l--)
                     {
                         printf("%d ",displaypath[l]);
