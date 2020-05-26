@@ -501,6 +501,101 @@ status_code TopologicalSort(Graph G)
     return sc;
 }
 //------------------------END of TOPOLOGICAL SORT-----------------
+Bool isGraphConnected(Graph G)
+{
+    //For DiGraphs Acyclic ..DAGs
+    Bool retval=TRUE;
+    int update=0,done=0;
+    int Reachability[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
+    GraphNode *Connection=NULL;
+    int i=0,j=0,k=0;
+    for(i=0;i<G.N;i++)
+    {
+        Connection=G.EdgeList[i];
+        while(Connection!=NULL)
+        {
+            Reachability[i][Connection->NodeNumber]=1;
+            Connection=Connection->next;
+        }
+    }
+    //Initialisation phase ends
+    //Adding an optim.
+    int found=0,not_connected=0;
+    for(i=0;i<G.N && not_connected==0;i++)
+    {
+        found=0;
+        for(j=0;j<G.N && found==0;j++)
+        {
+            if(i!=j)
+            {
+                if(Reachability[i][j]!=0)
+                {
+                    found=1;
+                }
+            }
+        }
+        if(found==0)
+        {
+            not_connected=1;
+        }
+    }
+    if(not_connected==0)
+    {
+        while(done==0)
+        {
+            update=0;
+            for(i=0;i<G.N;i++)
+            {
+                for(j=0;j<G.N;j++)
+                {
+                    if(i!=j)
+                    {
+                        if(Reachability[i][j]==1)
+                        {
+                            //Use this to update the reachability matrix
+                            for(k=0;k<G.N;k++)
+                            {
+                                if(k!=i)
+                                {
+                                    if(Reachability[i][k]==0 && Reachability[j][k]==1)
+                                    {
+                                        Reachability[i][k]=1;
+                                        update=1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if(update==0)
+            {
+                done=1;
+            }
+        }
+        for(i=0;i<G.N && retval==TRUE;i++)
+        {
+            for(j=0;j<G.N && retval==TRUE;j++)
+            {
+                if(i!=j)
+                {
+                    if(Reachability[i][j]!=1)
+                    {
+                        retval=FALSE;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        retval=FALSE;
+    }
+    return retval;
+}
+//Above code to detect connected graph
+//----------------------------------------------------------------
+//Dijkstra's Shortest Path Algorithm
 status_code DijkstraShortestPath(Graph G,int Vertex,int pathcost[MAX_NO_OF_VERTICES],int path[MAX_NO_OF_VERTICES])//Will only work for positive edges 
 {
     int CostMatrix[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
@@ -658,101 +753,8 @@ void PrintPathCalculatedViaDijkstra(Graph G,int vertex,int pathcost[MAX_NO_OF_VE
     }
 
 }
-
+//End of Dijkstra's Shortest Path algorithm
 //----------------------------------------------------------------
-Bool isGraphConnected(Graph G)
-{
-    //For DiGraphs Acyclic ..DAGs
-    Bool retval=TRUE;
-    int update=0,done=0;
-    int Reachability[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
-    GraphNode *Connection=NULL;
-    int i=0,j=0,k=0;
-    for(i=0;i<G.N;i++)
-    {
-        Connection=G.EdgeList[i];
-        while(Connection!=NULL)
-        {
-            Reachability[i][Connection->NodeNumber]=1;
-            Connection=Connection->next;
-        }
-    }
-    //Initialisation phase ends
-    //Adding an optim.
-    int found=0,not_connected=0;
-    for(i=0;i<G.N && not_connected==0;i++)
-    {
-        found=0;
-        for(j=0;j<G.N && found==0;j++)
-        {
-            if(i!=j)
-            {
-                if(Reachability[i][j]!=0)
-                {
-                    found=1;
-                }
-            }
-        }
-        if(found==0)
-        {
-            not_connected=1;
-        }
-    }
-    if(not_connected==0)
-    {
-        while(done==0)
-        {
-            update=0;
-            for(i=0;i<G.N;i++)
-            {
-                for(j=0;j<G.N;j++)
-                {
-                    if(i!=j)
-                    {
-                        if(Reachability[i][j]==1)
-                        {
-                            //Use this to update the reachability matrix
-                            for(k=0;k<G.N;k++)
-                            {
-                                if(k!=i)
-                                {
-                                    if(Reachability[i][k]==0 && Reachability[j][k]==1)
-                                    {
-                                        Reachability[i][k]=1;
-                                        update=1;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if(update==0)
-            {
-                done=1;
-            }
-        }
-        for(i=0;i<G.N && retval==TRUE;i++)
-        {
-            for(j=0;j<G.N && retval==TRUE;j++)
-            {
-                if(i!=j)
-                {
-                    if(Reachability[i][j]!=1)
-                    {
-                        retval=FALSE;
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        retval=FALSE;
-    }
-    return retval;
-}
-
 //
 
 
@@ -869,19 +871,6 @@ void main()
         {
             printf("\n");
             PrintPathCalculatedViaDijkstra(G,vertex,pathcost,path);
-            /*for(i=0;i<G.N;i++)
-            {
-                printf("\nThe cost to go to %d from %d is:%d",vertex,i,pathcost[i]);
-                j=i;
-                printf("\nReverse of this path is:");
-                printf("\n%d ",j);
-                while(path[j]!=-1)
-                {
-                    j=path[j];
-                    printf("%d ",j);
-                }
-                printf("%d",vertex);
-            }*/
         }
     }
     
