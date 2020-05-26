@@ -820,6 +820,68 @@ Bool isCycleInGraph(Graph G)//This one works only for Digraphs
             }
         }
     }
+    //Invert coz of meaning
+    if(retval==FALSE)
+    {
+        retval=TRUE;
+    }
+    else
+    {
+        retval=FALSE;
+    }
+    return retval;
+}
+
+Bool isCycleInGraphVer2(Graph G)//I was trying to make for undirected,this will not work on directed
+{
+    ///TO BE TESTED**************************************************
+    int AdjacencyMatrix[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0},temp[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={1};
+    int result[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
+    int i=0,j=0,k=0,a=0,b=0,c=0;
+    Bool retval=FALSE;
+    GraphNode *Connection;
+    for(i=0;i<G.N;i++)
+    {
+        Connection=G.EdgeList[i];
+        while(Connection!=NULL)
+        {
+            AdjacencyMatrix[i][Connection->NodeNumber]++;
+            Connection=Connection->next;
+        }
+    }
+     //The above stuff readies the adjacnecy matrix
+    for(k=0;k<G.N-1 && retval==FALSE;k++)
+    {
+        
+        //Multiply Adjacency matrix with temp
+        for(a=0;a<G.N && retval==FALSE;a++)
+        {
+            for(b=0;b<G.N && retval==FALSE;b++)
+            {
+                for(c=0;c<G.N;c++)
+                {
+                    result[a][b]+=AdjacencyMatrix[a][c]*temp[c][b];
+                }
+                if(result[a][b] >= 2)//More than one path to the same vertex
+                {
+                    retval=TRUE;
+                }
+            }
+        }
+        if(retval==FALSE)
+        {
+            for(a=0;a<G.N;a++)
+            {
+                for(b=0;b<G.N;b++)
+                {
+                    temp[a][b]=result[a][b];
+                    result[a][b]=0;
+                }
+            }
+        }
+
+    }
+    //
     return retval;
 }
 
@@ -852,9 +914,9 @@ void main()
         {
             printf("\nNo, not connected\n");
         }
-
-        b=isCycleInGraph(G);
-        if(b==TRUE)
+        */
+        Bool b=isCycleInGraph(G);
+        if(b==FALSE)
         {
             printf("\nNo cycle exists\n");
         }
@@ -862,7 +924,7 @@ void main()
         {
             printf("\nYes, atleast one cycle is present\n");
         }
-        */
+        /*
         int pathcost[MAX_NO_OF_VERTICES],path[MAX_NO_OF_VERTICES];
         int vertex,i=0,j=0;
         vertex=1;
@@ -871,7 +933,7 @@ void main()
         {
             printf("\n");
             PrintPathCalculatedViaDijkstra(G,vertex,pathcost,path);
-        }
+        }*/
     }
     
 }
