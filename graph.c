@@ -936,7 +936,7 @@ int MST(Graph G)
         else
         {
             includedInGraph[to]=1;
-            fprintf(fp,"\n%d %d",from,to);
+            fprintf(fp,"\n%d %d %d",from,to,min);
             cost+=min;
         }
     }
@@ -1127,7 +1127,7 @@ void main()
         int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
         AllPairShortestPath(G,Path);
         */
-        /*
+        
         int cost;
         cost=MST(G);
         if(cost<0)
@@ -1142,7 +1142,7 @@ void main()
             ReadGraph(&Tree,"MST.txt");
 
         }
-        */
+        
     }
     
 }
