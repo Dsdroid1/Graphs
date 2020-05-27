@@ -346,11 +346,13 @@ status_code ReadGraph(Graph *G,char *filename)
         {
             sc=FAILURE;
         }
+        fclose(fp);
     }
     else
     {
         sc=FAILURE;
     }
+    
     return sc;
 }
 
@@ -872,17 +874,6 @@ void PrintPathCalculatedViaAPSP(Graph G,int CostMatrix[MAX_NO_OF_VERTICES][MAX_N
                     displaypath[k]=m;
                     k++;
                     displaypath[k]=i;
-                    /*
-                    displaypath[k]=l;
-                    k++;
-                    while(Path[i][l]!=-1)
-                    {
-                        displaypath[k]=Path[i][l];
-                        l=Path[i][l];
-                        k++;
-                    }
-                    displaypath[k]=i;
-                    */
                     for(l=k;l>=0;l--)
                     {
                         printf("%d ",displaypath[l]);
@@ -892,6 +883,67 @@ void PrintPathCalculatedViaAPSP(Graph G,int CostMatrix[MAX_NO_OF_VERTICES][MAX_N
         }
     }
 }
+//End of APSP------------------------------------------------------
+
+//To calculate the Minimum Spanning Tree***************************
+int MST(Graph G)
+{
+    //Based on Prim's Algorithm
+    //The calculated tree will be stored in MST.txt in same directory 
+    int includedInGraph[MAX_NO_OF_VERTICES]={0};
+    int cost=0;
+    int min,i=0,j=0,done=0;
+    int from=-1,to=-1;
+    GraphNode *Connection;
+    includedInGraph[0]=1;
+    FILE *fp;
+    fp=fopen("MST.txt","w");
+    fprintf(fp,"%d",G.N);
+    //Assuming that the 0 vertex is already present in the set 
+    //Find the minimum wt edge such that the vertex is contains is not included in the set... 
+    for(j=0;j<G.N-1;j++)//To select N-1 more vertex
+    {   
+        min=INF;
+        from=-1;
+        to=-1;
+        for(i=0;i<G.N;i++)
+        {
+            if(includedInGraph[i]==1)
+            {
+                //Then only check to update minimum
+                Connection=G.EdgeList[i];
+                while(Connection!=NULL)
+                {
+                    if(includedInGraph[Connection->NodeNumber]==0)//FInd a new edge of min cost
+                    {
+                        if(Connection->weight < min)
+                        {
+                            min=Connection->weight;
+                            from=i;
+                            to=Connection->NodeNumber;
+                        }
+                    }
+                    Connection=Connection->next;
+                }
+            }
+        }
+        if(min==INF)
+        {
+            //No edge is existing ,MST cant be found
+            cost=-1;
+            done=1;
+        }
+        else
+        {
+            includedInGraph[to]=1;
+            fprintf(fp,"\n%d %d",from,to);
+            cost+=min;
+        }
+    }
+    fclose(fp);
+    return cost;
+}
+
 
 //-----------------------------------------------------------------
 Bool isCycleInGraph(Graph G)//This one works only for Digraphs
@@ -1071,8 +1123,26 @@ void main()
             printf("\n");
             PrintPathCalculatedViaDijkstra(G,vertex,pathcost,path);
         }*/
+        /*
         int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
         AllPairShortestPath(G,Path);
+        */
+        /*
+        int cost;
+        cost=MST(G);
+        if(cost<0)
+        {
+            printf("\n\nMST does not exist");
+        }
+        else
+        {
+            printf("\n\nThe cost of this MST is :%d",cost);
+            Graph Tree;
+            InitGraph(&Tree);
+            ReadGraph(&Tree,"MST.txt");
+
+        }
+        */
     }
     
 }
