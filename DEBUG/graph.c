@@ -1,4 +1,47 @@
-#include"graph.h"
+#include<stdio.h>
+#include<stdlib.h>
+#include<limits.h>
+
+#define MAX_NO_OF_VERTICES 10
+#define INF INT_MAX
+//Using Adjacency List
+
+typedef enum {FALSE,TRUE} Bool;
+typedef enum {FAILURE,SUCCESS} status_code;
+typedef enum {DIRECTED,UNDIRECTED} graph_type;
+
+
+typedef struct GraphNode
+{
+    int NodeNumber;
+    struct GraphNode *next;
+    int weight;
+}GraphNode;
+
+typedef struct Graph
+{
+    int N;//No.of Vertices/Nodes
+    struct GraphNode *EdgeList[MAX_NO_OF_VERTICES];
+    //int UserVertices[MAX_NO_OF_VERTICES];
+    graph_type type;
+}Graph;
+
+//BAsic Structure definitions end here-----------------------
+
+//Definition for queue---------------------------------------
+typedef struct Q_element
+{
+    int data;
+    struct Q_element *next;
+}Q_element;
+
+typedef struct Queue
+{
+    Q_element *front;
+    Q_element *rear;
+}Queue;
+
+
 
 void InitQueue(Queue *Qptr)
 {
@@ -1133,7 +1176,7 @@ void FindPath(Graph G,int curr_vertex,int visited[MAX_NO_OF_VERTICES],int destin
     
 }
 
-/*
+
 ///********************For testing purpose ONLY********************
 void main()
 {
@@ -1192,7 +1235,7 @@ void main()
         int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
         AllPairShortestPath(G,Path);
         
-        /*
+        */
         int cost;
         cost=MST(G);
         if(cost<0)
@@ -1208,13 +1251,14 @@ void main()
 
         }
         
-
+	/*
         int vertex_Start,vertex_End;
         vertex_Start=1;
         vertex_End=2;
         PrintAllPossiblePaths(G,vertex_Start,vertex_End);
+        */
     }
     
 }
-*/
+
 
