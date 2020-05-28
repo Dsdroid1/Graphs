@@ -1071,6 +1071,94 @@ Bool isCycleInGraphVer2(Graph G)//I was trying to make for undirected,this will 
     //
     return retval;
 }
+//-----------------------------------------------------------------
+//Function to print all possible paths from vertex 'A' to 'B'
+void FindPath(Graph G,int curr_vertex,int visited[MAX_NO_OF_VERTICES],int destination,int *pathlength,int path[MAX_NO_OF_VERTICES],Bool *atleastOnePath);
+void PrintAllPossiblePaths(Graph G,int vertex_Start,int vertex_End)
+{
+    int i=0;
+    int pathlength=0;
+    int path[MAX_NO_OF_VERTICES];
+    int visited[MAX_NO_OF_VERTICES]={0};
+    Bool atleastOnePath=FALSE;
+    if(vertex_Start < G.N && vertex_End < G.N)
+    {
+        path[pathlength]=vertex_Start;
+        //pathlength++;
+        visited[vertex_Start]=1;
+        //Now we will try for a recursive solution to get all paths
+        //kind of like a Depth First traversal
+        GraphNode *Connection=G.EdgeList[vertex_Start];
+        while(Connection!=NULL)
+        {
+            FindPath(G,Connection->NodeNumber,visited,vertex_End,&pathlength,path,&atleastOnePath);
+            Connection=Connection->next;
+        }
+        if(atleastOnePath==FALSE)
+        {
+            printf("\n\nThere is no possible path between the given pair of vertices!\n");
+        }
+    }
+    else
+    {
+        printf("\nInvalid Details of Vertices!!");
+    }
+}
+
+void FindPath(Graph G,int curr_vertex,int visited[MAX_NO_OF_VERTICES],int destination,int *pathlength,int path[MAX_NO_OF_VERTICES],Bool *atleastOnePath)
+{
+    
+    //Then use recursion to go to all other nodes connected to this node
+    if(curr_vertex==destination)//Will happen only via call through Above fn
+    {
+        printf("\n\nOne of the Path(s) is:\n");
+        printf("%d %d",path[*pathlength],destination);
+        *atleastOnePath=TRUE;
+    }
+    else
+    {
+        *pathlength=(*pathlength)+1;
+        path[*pathlength]=curr_vertex;
+        visited[curr_vertex]=1;
+        GraphNode *Connection;
+        Connection=G.EdgeList[curr_vertex];
+        while(Connection!=NULL)
+        {
+            if(Connection->NodeNumber==destination)
+            {
+                *pathlength=(*pathlength)+1;
+                path[*pathlength]=destination;
+                //Print this current path
+                *atleastOnePath=TRUE;
+                int i=0;
+                printf("\n\nOne of the Path(s) is:\n");
+                for(i=0;i<=*pathlength;i++)
+                {
+                    printf("%d ",path[i]);
+                }
+                *pathlength=(*pathlength)-1;
+                //To normalise to search for next path...
+            }
+            else
+            {
+                if(visited[Connection->NodeNumber]==0)
+                {
+                    //*pathlength=(*pathlength)+1;
+                    //path[*pathlength]=Connection->NodeNumber;
+                    //visited[Connection->NodeNumber]=1;
+                    FindPath(G,Connection->NodeNumber,visited,destination,pathlength,path,atleastOnePath);
+                    //visited[Connection->NodeNumber]=0;
+                    //*pathlength=(*pathlength)-1;
+                }
+            }
+            Connection=Connection->next;
+        }
+        visited[curr_vertex]=0;
+        *pathlength=(*pathlength)-1;
+    }
+    
+}
+
 
 ///********************For testing purpose ONLY********************
 void main()
@@ -1085,13 +1173,15 @@ void main()
         BFT(G);
         
         DFT(G);
-        
+        */
+        /*
         sc=TopologicalSort(G);
         if(sc==FAILURE)
         {
             printf("\nTerminating function,cycle detected");
         }
-       
+        */
+        /*
         Bool b=isGraphConnected(G);
         if(b==TRUE)
         {
@@ -1122,12 +1212,13 @@ void main()
         {
             printf("\n");
             PrintPathCalculatedViaDijkstra(G,vertex,pathcost,path);
-        }*/
+        }
+        */
         /*
         int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
         AllPairShortestPath(G,Path);
         */
-        
+        /*
         int cost;
         cost=MST(G);
         if(cost<0)
@@ -1142,7 +1233,12 @@ void main()
             ReadGraph(&Tree,"MST.txt");
 
         }
-        
+        */
+
+        int vertex_Start,vertex_End;
+        vertex_Start=1;
+        vertex_End=2;
+        PrintAllPossiblePaths(G,vertex_Start,vertex_End);
     }
     
 }
