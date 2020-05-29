@@ -188,6 +188,11 @@ status_code DeleteEdge(Graph *G,int start_vertex,int end_vertex)
                 {
                     G->EdgeList[start_vertex]=Connection->next;
                 }
+                else
+                {
+                    prev->next=Connection->next;
+                }
+                
                 free(Connection);
             }
             else
@@ -264,11 +269,12 @@ status_code ReadGraph(Graph *G,char *filename)
     //The file should be in a given format
     /*
         First Line-No.of nodes TypeOfGraph(0-Directed,1-Undirected)
+        Second Line-Weighted?(0-FALSE,1-TRUE)
         Consequent Lines-Edge vertex pairs like 1 2 if edge from 1 to 2
     */
     status_code sc=SUCCESS;
     graph_type Gtype;
-    int type;
+    int type,weighted;
     FILE *fp;
     if(G->N == 0)//Basically not to overwrite an existing graph
     {
@@ -286,6 +292,8 @@ status_code ReadGraph(Graph *G,char *filename)
                 Gtype=0;
             }
             G->type=Gtype;
+            fscanf(fp,"%d",&weighted);
+            G->weighted=weighted;
             for(int i=0;i<num_nodes && sc==SUCCESS;i++)
             {
                 sc=AddNode(G);
@@ -296,6 +304,10 @@ status_code ReadGraph(Graph *G,char *filename)
                 int start_vertex,end_vertex,weight;
                 while(fscanf(fp,"%d%d%d",&start_vertex,&end_vertex,&weight)!=EOF && sc==SUCCESS)
                 {
+                    if(G->weighted==FALSE)
+                    {
+                        weight=0;
+                    }
                     sc=AddEdge(G,start_vertex,end_vertex,weight);
                     if(G->type==UNDIRECTED)
                     {
@@ -873,6 +885,7 @@ int MST(Graph G)
     FILE *fp;
     fp=fopen("MST.txt","w");
     fprintf(fp,"%d %d",G.N,G.type);
+    fprintf(fp,"\n%d",G.weighted);
     //Assuming that the 0 vertex is already present in the set 
     //Find the minimum wt edge such that the vertex is contains is not included in the set... 
     for(j=0;j<G.N-1;j++)//To select N-1 more vertex

@@ -22,7 +22,7 @@ typedef struct Graph
 {
     int N;//No.of Vertices/Nodes
     struct GraphNode *EdgeList[MAX_NO_OF_VERTICES];
-    //int UserVertices[MAX_NO_OF_VERTICES];
+    Bool weighted;
     graph_type type;
 }Graph;
 

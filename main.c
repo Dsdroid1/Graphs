@@ -1,9 +1,147 @@
 #include"graph.h"
 
+status_code DeleteAndRename(Graph *G,int NodeNumber)
+{
+    status_code sc=SUCCESS;
+    if(NodeNumber < G->N)
+    {
+        GraphNode *Connection,*prev=NULL;
+        int i;
+        for(i=0;i<G->N;i++)
+        {
+            Connection=G->EdgeList[i];
+            prev=NULL;
+            if(i!=NodeNumber)
+            {
+                while(Connection!=NULL)
+                {
+                    if(Connection->NodeNumber==NodeNumber)
+                    {
+                        if(prev==NULL)
+                        {
+                            G->EdgeList[i]=Connection->next;
+                        }
+                        else
+                        {
+                            prev->next=Connection->next;
+                        }
+                        
+                        prev=Connection;
+                        Connection=Connection->next;
+                        free(prev);
+                    }
+                    else if(Connection->NodeNumber < NodeNumber)
+                    {
+                        prev=Connection;
+                        Connection=Connection->next;
+                    }
+                    else
+                    {
+                        Connection->NodeNumber=(Connection->NodeNumber)-1;  
+                        prev=Connection;
+                        Connection=Connection->next; 
+                    }
+                }
+            }
+            else
+            {
+                while(Connection!=NULL)
+                {
+                    prev=Connection;
+                    Connection=Connection->next;
+                    free(prev);
+                    G->EdgeList[i]=NULL;
+                }
+            }
+        }  
+        for(i=NodeNumber;i<G->N-1;i++)
+        {
+            G->EdgeList[i]=G->EdgeList[i+1];
+            printf("\nNode %d has been renamed to %d",i+1,i);
+        }
+        G->EdgeList[G->N]=NULL;
+        G->N=G->N - 1;
+    }
+    else
+    {
+        sc=FAILURE;
+    }
+    return sc;
+}
+
+void DisplayGraphInfo(Graph G)
+{
+    int i=0;
+    GraphNode *Connection;
+    printf("\nThis graph has the set of vertices:");
+    printf("\n{");
+    for(i=0;i<G.N;i++)
+    {
+        printf("%d ",i);
+    }
+    printf("}\n");
+    if(G.type==DIRECTED)
+    {
+        printf("It is a Directed Graph");
+    }
+    else
+    {
+        printf("It is an Undirected Graph");
+    }
+    if(G.weighted==TRUE)
+    {
+        printf("\nIt is a Weighted Graph");
+    }
+    else
+    {
+        printf("\nIt is a Non-Weighted Graph");
+    }
+    printf("\nThe set of edges are:\n");
+    for(i=0;i<G.N;i++)
+    {
+        Connection=G.EdgeList[i];
+        while(Connection!=NULL)
+        {
+            printf("(%d, %d) ",i,Connection->NodeNumber);
+            Connection=Connection->next;
+        }
+    }
+    printf("\n\n");
+}
+
+status_code StoreGraphToFile(Graph G,char *filename)
+{
+    status_code sc=SUCCESS;
+    FILE *fp;
+    fp=fopen(filename,"w");
+    if(fp!=NULL)
+    {
+        fprintf(fp,"%d %d",G.N,G.type);
+        fprintf(fp,"\n%d",G.weighted);
+        int i=0;
+        GraphNode *Connection;
+        for(i=0;i<G.N;i++)
+        {
+            Connection=G.EdgeList[i];
+            while(Connection!=NULL)
+            {
+                fprintf(fp,"\n%d %d %d",i,Connection->NodeNumber,Connection->weight);
+                Connection=Connection->next;
+            }
+        }
+        fclose(fp);
+    }
+    else
+    {
+        sc=FAILURE;
+    }
+    return sc;
+}
+
 void EditUIGraph(Graph *G)
 {
     int done=0,choice;
-    int from,to,wt;
+    int from,to,wt,vertex;
     status_code sc;
     while(done==0)
     {
@@ -11,8 +149,10 @@ void EditUIGraph(Graph *G)
         printf("\n1.Add a Node");
         printf("\n2.Add an Edge");
         printf("\n3.Delete an Edge");
-        printf("\n4.Delete a node[To be developed]");
-        printf("\n5.Store graph details in GraphDetails.txt[To be developed]");
+        printf("\n4.Delete a node(Will result in renaming vertices)");
+        printf("\n5.Store graph details in GraphDetails.txt");
+        printf("\n6.Display All info regarding this graph");
+        printf("\n7.Any other number to go back");
         printf("\nYour Choice:");
         scanf("%d",&choice);
         printf("\n");
@@ -40,7 +180,15 @@ void EditUIGraph(Graph *G)
                     scanf("%d",&to);
                     printf("\nEnter the edge weight(0 if unweighted graph):");
                     scanf("%d",&wt);
+                    if(G->weighted==FALSE)
+                    {
+                        wt=0;
+                    }
                     sc=AddEdge(G,from,to,wt);
+                    if(G->type==UNDIRECTED)
+                    {
+                        sc=AddEdge(G,to,from,wt);
+                    }
                     if(sc==SUCCESS)
                     {
                         printf("\nSuccessfull Operation");
@@ -58,6 +206,10 @@ void EditUIGraph(Graph *G)
                     printf("\nEnter the terminating point(to):");
                     scanf("%d",&to);
                     sc=DeleteEdge(G,from,to);
+                    if(G->type==UNDIRECTED)
+                    {
+                        sc=DeleteEdge(G,to,from);
+                    }
                     if(sc==SUCCESS)
                     {
                         printf("\nSuccessfull Operation");
@@ -69,9 +221,33 @@ void EditUIGraph(Graph *G)
                     break;
 
             case 4:
+                    printf("\nWhich Node is to be deleted:");
+                    scanf("%d",&vertex);
+                    sc=DeleteAndRename(G,vertex);
+                    if(sc==SUCCESS)
+                    {
+                        printf("\nSuccessfull Operation");
+                    }
+                    else
+                    {
+                        printf("\nSome error occured");
+                    }
                     break;
 
             case 5:
+                    sc=StoreGraphToFile(*G,"GraphDetails.txt");
+                    if(sc==SUCCESS)
+                    {
+                        printf("\nSuccessfull Operation");
+                    }
+                    else
+                    {
+                        printf("\nSome error occured");
+                    }
+                    break;
+
+            case 6:
+                    DisplayGraphInfo(*G);
                     break;
 
             default:
@@ -87,7 +263,7 @@ void main()
     Graph G;
     InitGraph(&G);
     status_code sc;
-    sc=ReadGraph(&G,"TestGraph.txt");
+    sc=ReadGraph(&G,"TestGraphUnweighted.txt");
     if(sc==SUCCESS)
     {
         printf("\nSuccessfully read the graph from file!");
@@ -150,26 +326,42 @@ void main()
 
                 case 6:
                         ;
-                        int pathcost[MAX_NO_OF_VERTICES],path[MAX_NO_OF_VERTICES];
-                        int vertex;
-                        printf("\nFrom which vertex do you want the paths:");
-                        scanf("%d",&vertex);
-                        sc=DijkstraShortestPath(G,vertex,pathcost,path);
-                        if(sc==SUCCESS)
+                        if(G.weighted==TRUE)
                         {
-                            printf("\n");
-                            PrintPathCalculatedViaDijkstra(G,vertex,pathcost,path);
+                            int pathcost[MAX_NO_OF_VERTICES],path[MAX_NO_OF_VERTICES];
+                            int vertex;
+                            printf("\nFrom which vertex do you want the paths:");
+                            scanf("%d",&vertex);
+                            sc=DijkstraShortestPath(G,vertex,pathcost,path);
+                            if(sc==SUCCESS)
+                            {
+                                printf("\n");
+                                PrintPathCalculatedViaDijkstra(G,vertex,pathcost,path);
+                            }
+                            else
+                            {
+                                printf("\nSome negative weight is present,use option 7 for APSP");
+                            }
                         }
                         else
                         {
-                            printf("\nSome negative weight is present,use option 7 for APSP");
+                            printf("\nIt is an unweighted graph!!");
                         }
+                        
                         break;
 
                 case 7:
                         ;
-                        int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
-                        AllPairShortestPath(G,Path);//Does not detect negative cycle
+                        if(G.weighted==TRUE)
+                        {
+                            int Path[MAX_NO_OF_VERTICES][MAX_NO_OF_VERTICES]={0};
+                            AllPairShortestPath(G,Path);//Does not detect negative cycle
+                        }
+                        else
+                        {
+                            printf("\nIt is an unweighted graph!!");
+                        }
+                        
                         break;
 
                 case 8:
@@ -209,16 +401,23 @@ void main()
                         //Without -ve cost
                         ;
                         //Will give a directed/Undirected tree depending on the input
-                        int cost;
-                        cost=MST(G);
-                        if(cost<0)
+                        if(G.weighted==TRUE)
                         {
-                            printf("\n\nMST does not exist");
+                            int cost;
+                            cost=MST(G);
+                            if(cost<0)
+                            {
+                                printf("\n\nMST does not exist");
+                            }
+                            else
+                            {
+                                printf("\n\nThe cost of this MST is :%d",cost);
+                                printf("\nTne details of this tree are overwritten in MST.txt");
+                            }
                         }
                         else
                         {
-                            printf("\n\nThe cost of this MST is :%d",cost);
-                            printf("\nTne details of this tree are overwritten in MST.txt");
+                            printf("\nIt is an unweighted graph!!");
                         }
                         break;
 
