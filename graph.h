@@ -81,3 +81,8 @@ Bool isCycleInGraphVer2(Graph G);//For undirected
 void FindPath(Graph G,int curr_vertex,int visited[MAX_NO_OF_VERTICES],int destination,int *pathlength,int path[MAX_NO_OF_VERTICES],Bool *atleastOnePath);
 void PrintAllPossiblePaths(Graph G,int vertex_Start,int vertex_End);
 
+//-----DFS and BFS
+Bool Traverse2(int curr_vertex,Graph G,int Visited[MAX_NO_OF_VERTICES],int value_to_be_searched);
+Bool DFS(Graph G,int value_to_be_searched);
+Bool BFS(Graph G,int value_to_be_searched);
+

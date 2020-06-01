@@ -268,8 +268,8 @@ void main()
     {
         printf("\nSuccessfully read the graph from file!");
         
-        int done=0,choice;
-        Bool isConnected,isCyclic;
+        int done=0,choice,value;
+        Bool isConnected,isCyclic,isValueInGraph;
 
         while(done==0)
         {
@@ -366,6 +366,28 @@ void main()
 
                 case 8:
                         //To be implemented....
+                        printf("\nEnter the value to be searched:");
+                        scanf("%d",&value);
+                        printf("\nSearching by DFS");
+                        isValueInGraph=DFS(G,value);
+                        if(isValueInGraph==TRUE)
+                        {
+                            printf("\nValue Found by DFS");
+                        }
+                        else
+                        {
+                            printf("\nThe value does not exist in the graph");
+                        }
+                        printf("\nSearching by BFS");
+                        isValueInGraph=BFS(G,value);
+                        if(isValueInGraph==TRUE)
+                        {
+                            printf("\nValue Found by BFS");
+                        }
+                        else
+                        {
+                            printf("\nThe value does not exist in the graph");
+                        }
                         break;
 
                 case 9:

@@ -381,6 +381,100 @@ void DFT(Graph G)
     }
 }
 
+Bool Traverse2(int curr_vertex,Graph G,int Visited[MAX_NO_OF_VERTICES],int value_to_be_searched)
+{
+    Bool retval=FALSE;
+    GraphNode *Connection;
+    Connection=G.EdgeList[curr_vertex];
+    if(Visited[curr_vertex]==0)
+    {
+        Visited[curr_vertex]=1;
+    }
+    while(Connection!=NULL && retval==FALSE)
+    {
+        if(Visited[Connection->NodeNumber]==0)
+        {
+            if(Connection->NodeNumber==value_to_be_searched)
+            {
+                retval=TRUE;
+            }
+            else
+            {
+                retval=Traverse2(Connection->NodeNumber,G,Visited,value_to_be_searched);
+            }
+        }
+        Connection=Connection->next;
+    }
+    return retval;
+}
+
+Bool DFS(Graph G,int value_to_be_searched)
+{
+    int Visited[MAX_NO_OF_VERTICES]={0};
+    int curr_vertex=0;
+    int i=0;
+    GraphNode *Connection=NULL;
+    Bool retval=FALSE;//TRUE ,If exists in graph
+    for(i=0;i<G.N && retval==FALSE;i++)
+    {
+        curr_vertex=i;
+        if(curr_vertex==value_to_be_searched)
+        {
+            retval=TRUE;
+        }
+        else
+        {
+            if(Visited[curr_vertex]==0)
+            {
+                retval=Traverse2(curr_vertex,G,Visited,value_to_be_searched);
+            }
+        }
+    }
+    return retval;
+}
+
+Bool BFS(Graph G,int value_to_be_searched)
+{
+    Bool retval=FALSE;
+    Queue Q;
+    InitQueue(&Q);
+    int Visited[MAX_NO_OF_VERTICES]={0};
+    int i,curr_vertex;
+    for(i=0;i<G.N && retval==FALSE;i++)
+    {
+        if(Visited[i]==0)
+        {
+            InsertQ(&Q,i);
+            while(isQueueEmpty(Q)==FALSE && retval==FALSE)
+            {
+                DeleteQ(&Q,&curr_vertex);
+                if(Visited[curr_vertex]==0)
+                {
+                    if(curr_vertex==value_to_be_searched)
+                    {
+                        retval=TRUE;
+                    }
+                    else
+                    {
+                        Visited[curr_vertex]=1;
+                        GraphNode *Connection;
+                        Connection=G.EdgeList[curr_vertex];
+                        while(Connection!=NULL)
+                        {
+                            if(Visited[Connection->NodeNumber]==0)
+                            {
+                                InsertQ(&Q,Connection->NodeNumber);
+                            }
+                            Connection=Connection->next;
+                        }   
+                    }
+                }
+            }
+        }
+    }
+    return retval;
+}
+
 //************************BREADTH FIRST TRAVERSAL*******************************
 //Queue data structure required-------------------------------------------------
 void BFT(Graph G)
